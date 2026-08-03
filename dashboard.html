@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard de Postura de Segurança | Costa</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-panel: #161b22;
+    --border: #30363d;
+    --text: #c9d1d9;
+    --text-bright: #f0f6fc;
+    --accent: #58a6ff;
+    --alta: #f85149;
+    --media: #d29922;
+    --baixa: #3fb950;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Courier New', monospace;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px 60px;
+    line-height: 1.6;
+  }
+  a { color: var(--accent); }
+  h1 { color: var(--accent); margin-bottom: 4px; }
+  .subtitulo { color: #8b949e; margin-top: 0; font-size: 0.95em; }
+  .back-link { display: inline-block; margin-bottom: 20px; }
+
+  .painel-scan {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 25px 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .painel-scan input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-bright);
+    font-family: inherit;
+    padding: 10px 12px;
+    border-radius: 6px;
+    flex: 1;
+    min-width: 180px;
+  }
+  .painel-scan input:focus { outline: 1px solid var(--accent); }
+  .painel-scan select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-bright);
+    font-family: inherit;
+    padding: 10px 12px;
+    border-radius: 6px;
+  }
+  .painel-scan button {
+    background: var(--accent);
+    color: #0d1117;
+    border: none;
+    font-family: inherit;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .painel-scan button:hover { opacity: 0.85; }
+  .painel-scan button:disabled { opacity: 0.5; cursor: wait; }
+
+  .aviso {
+    font-size: 0.85em;
+    color: #8b949e;
+    margin-top: -10px;
+    margin-bottom: 20px;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .card .numero { font-size: 2em; font-weight: bold; color: var(--text-bright); }
+  .card .label { color: #8b949e; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em; }
+  .card.total { border-left-color: var(--accent); }
+  .card.alta { border-left-color: var(--alta); }
+  .card.media { border-left-color: var(--media); }
+  .card.baixa { border-left-color: var(--baixa); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: var(--bg-panel);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9em;
+  }
+  th { color: #8b949e; text-transform: uppercase; font-size: 0.75em; letter-spacing: 0.05em; }
+  tr:last-child td { border-bottom: none; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: bold;
+  }
+  .badge.alta { background: rgba(248,81,73,0.15); color: var(--alta); }
+  .badge.media { background: rgba(210,153,34,0.15); color: var(--media); }
+  .badge.baixa { background: rgba(63,185,80,0.15); color: var(--baixa); }
+
+  .btn-dica {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 0.8em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .btn-dica:hover { background: var(--bg); }
+  .linha-dica td {
+    background: var(--bg);
+    color: #8b949e;
+    font-size: 0.85em;
+    font-style: italic;
+  }
+
+  .estado-vazio, .estado-erro {
+    background: var(--bg-panel);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    color: #8b949e;
+    margin-top: 20px;
+  }
+  .estado-erro { border-color: var(--alta); color: var(--alta); }
+
+  .timestamp { color: #8b949e; font-size: 0.85em; margin-top: 8px; }
+</style>
+</head>
+<body>
+  <a class="back-link" href="/">&larr; voltar ao portfólio</a>
+  <h1>&gt; Dashboard de Postura de Segurança</h1>
+  <p class="subtitulo">Scanner de rede local via nmap — projeto demonstrativo de análise de exposição de portas</p>
+
+  <div class="painel-scan">
+    <input type="text" id="input-alvo" placeholder="Ex: 127.0.0.1 ou 192.168.1.1" value="127.0.0.1">
+    <select id="select-tipo-scan">
+      <option value="rapido">Rápido (portas comuns)</option>
+      <option value="completo">Completo (todas as portas + versão)</option>
+    </select>
+    <button id="btn-scan" onclick="rodarScan()">Rodar Scan</button>
+  </div>
+  <p class="aviso">⚠ Só é possível escanear localhost ou redes privadas (192.168.x.x, 10.x.x.x). Scan completo pode levar vários minutos. Requer o backend rodando em <code>http://127.0.0.1:5000</code>.</p>
+
+  <div id="conteudo-resultado">
+    <div class="estado-vazio">Nenhum scan executado ainda. Informe um alvo e clique em "Rodar Scan".</div>
+  </div>
+
+<script>
+const API_URL = "http://127.0.0.1:5000";
+
+async function rodarScan() {
+  const alvo = document.getElementById("input-alvo").value.trim();
+  const tipoScan = document.getElementById("select-tipo-scan").value;
+  const btn = document.getElementById("btn-scan");
+  const container = document.getElementById("conteudo-resultado");
+
+  if (!alvo) return;
+
+  btn.disabled = true;
+  btn.textContent = "Escaneando...";
+  const avisoTempo = tipoScan === "completo" ? " (scan completo pode levar vários minutos)" : "";
+  container.innerHTML = '<div class="estado-vazio">Rodando nmap em ' + escapeHtml(alvo) + avisoTempo + '...</div>';
+
+  try {
+    const resp = await fetch(API_URL + "/api/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ alvo, tipo_scan: tipoScan })
+    });
+    const dados = await resp.json();
+
+    if (!resp.ok) {
+      container.innerHTML = '<div class="estado-erro">Erro: ' + escapeHtml(dados.erro || "falha desconhecida") + '</div>';
+      return;
+    }
+
+    renderizarResultado(dados);
+  } catch (e) {
+    container.innerHTML = '<div class="estado-erro">Não foi possível conectar ao backend em ' + API_URL + '. Confirma se o servidor Flask está rodando (python3 app.py).</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Rodar Scan";
+  }
+}
+
+function renderizarResultado(dados) {
+  const portas = dados.portas_abertas || [];
+  const contagem = { alta: 0, media: 0, baixa: 0 };
+  portas.forEach(p => contagem[p.severidade] = (contagem[p.severidade] || 0) + 1);
+
+  let html = '';
+
+  html += '<div class="cards">';
+  html += cardHtml("total", portas.length, "Portas Abertas");
+  html += cardHtml("alta", contagem.alta, "Severidade Alta");
+  html += cardHtml("media", contagem.media, "Severidade Média");
+  html += cardHtml("baixa", contagem.baixa, "Severidade Baixa");
+  html += '</div>';
+
+  if (portas.length === 0) {
+    html += '<div class="estado-vazio">Nenhuma porta aberta encontrada em ' + escapeHtml(dados.alvo) + '.</div>';
+  } else {
+    html += '<table><thead><tr><th>Porta</th><th>Protocolo</th><th>Estado</th><th>Serviço</th><th>Severidade</th><th></th></tr></thead><tbody>';
+    portas.sort((a, b) => a.porta - b.porta).forEach((p, i) => {
+      const idDica = 'dica-' + i;
+      html += '<tr>';
+      html += '<td>' + p.porta + '</td>';
+      html += '<td>' + escapeHtml(p.protocolo) + '</td>';
+      html += '<td>' + escapeHtml(p.estado) + '</td>';
+      html += '<td>' + escapeHtml(p.servico) + '</td>';
+      html += '<td><span class="badge ' + p.severidade + '">' + p.severidade.toUpperCase() + '</span></td>';
+      html += '<td><button class="btn-dica" onclick="alternarDica(\'' + idDica + '\')">O que estudar?</button></td>';
+      html += '</tr>';
+      html += '<tr class="linha-dica" id="' + idDica + '" style="display:none"><td colspan="6">' + escapeHtml(p.nota_educacional || '') + '</td></tr>';
+    });
+    html += '</tbody></table>';
+  }
+
+  html += '<p class="timestamp">Alvo: ' + escapeHtml(dados.alvo) + ' · Scan em: ' + new Date(dados.timestamp).toLocaleString('pt-PT') + '</p>';
+
+  document.getElementById("conteudo-resultado").innerHTML = html;
+}
+
+function cardHtml(classe, numero, label) {
+  return '<div class="card ' + classe + '"><div class="numero">' + numero + '</div><div class="label">' + label + '</div></div>';
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function alternarDica(id) {
+  const linha = document.getElementById(id);
+  linha.style.display = linha.style.display === "none" ? "table-row" : "none";
+}
+</script>
+</body>
+</html>
