@@ -47,7 +47,7 @@ O payload evoluiu em etapas progressivas, cada uma demonstrando um nível maior 
 
 Em um cenário de ataque real, o `alert()` / `console.log()` seria substituído por um `fetch()` enviando o conteúdo do `localStorage` para um servidor controlado pelo atacante — sem qualquer indício visível para a vítima.
 
-**[COLOCAR SCREENSHOT AQUI — print do alert/console mostrando o saldo de 100000 exposto]**
+**![PoC - Saldo exposto](xss-poc.png)**
 
 ## Causa Raiz
 
