@@ -1,3 +1,7 @@
+---
+layout: writeup
+title: "Stored XSS em Assistente de Bolso"
+---
 # Stored XSS em "Assistente de Bolso" — Exfiltração de Dados Financeiros via localStorage
 
 **Data:** Agosto 2026
