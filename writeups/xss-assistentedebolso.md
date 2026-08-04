@@ -6,9 +6,9 @@ title: "Stored XSS em Assistente de Bolso"
 # Stored XSS em "Assistente de Bolso" — Exfiltração de Dados Financeiros via localStorage
 
 **Data:** Agosto 2026
-**Severidade:** Alta
+**Severidade:** Alta (CVSS 3.1: 6.1 — Medium)
 **Tipo:** Stored Cross-Site Scripting (XSS)
-**Status:** Projeto próprio (ambiente de desenvolvimento/teste)
+**Status:** Corrigido (projeto próprio, ambiente de desenvolvimento/teste)
 
 ---
 
@@ -17,6 +17,31 @@ title: "Stored XSS em Assistente de Bolso"
 Durante testes no meu próprio projeto **Assistente de Bolso** (app de controle financeiro pessoal), identifiquei uma vulnerabilidade de **Stored XSS** no campo de descrição de gastos. O campo não realiza sanitização de input, permitindo a injeção de código JavaScript que é executado toda vez que a página carrega o gasto salvo.
 
 Além da falha de sanitização, o app apresenta um problema de design mais amplo: dados financeiros sensíveis (saldo da conta, histórico de gastos, categorias) são armazenados em texto claro no **localStorage** do navegador, sob a chave `assistente-financeiro-state` — um mecanismo acessível por qualquer script executado no contexto da página.
+
+## CVSS 3.1 Score
+
+**Vetor:** `CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N`
+**Score base:** 6.1 (Medium)
+
+| Métrica | Valor | Justificativa |
+|---|---|---|
+| Attack Vector (AV) | Network (N) | Exploração não depende de acesso físico ou de rede local |
+| Attack Complexity (AC) | Low (L) | Não exige condições especiais além de inserir o payload |
+| Privileges Required (PR) | None (N) | App single-user, sem barreira de autenticação para injetar o payload |
+| User Interaction (UI) | Required (R) | A vítima precisa recarregar a página / acessar o histórico |
+| Scope (S) | Unchanged (U) | Impacto restrito ao mesmo domínio/aplicação comprometida |
+| Confidentiality (C) | High (H) | Todo o conteúdo do localStorage (saldo, histórico) é exposto |
+| Integrity (I) | None (N) | O payload apenas lê dados, não os altera |
+| Availability (A) | None (N) | Não há impacto na disponibilidade do serviço |
+
+## Disclosure Timeline
+
+Como o "Assistente de Bolso" é um projeto pessoal em ambiente de desenvolvimento, não houve processo de disclosure para terceiros — a timeline abaixo documenta o ciclo de identificação e correção, seguindo a estrutura que projetos reais usam para reportar vulnerabilidades:
+
+- **Descoberto em:** Agosto 2026 — durante testes manuais no campo de descrição de gastos
+- **PoC desenvolvida em:** Agosto 2026 — payload evoluído em 4 etapas para demonstrar impacto real
+- **Publicado em:** Agosto 2026
+- **Corrigido em:** Agosto 2026 — sanitização de input implementada no campo de descrição
 
 ## Passos para Reproduzir
 
