@@ -159,6 +159,46 @@
   .estado-erro { border-color: var(--alta); color: var(--alta); }
 
   .timestamp { color: #8b949e; font-size: 0.85em; margin-top: 8px; }
+
+  .painel-score {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 25px 0;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .score-numero {
+    font-size: 3em;
+    font-weight: bold;
+    line-height: 1;
+  }
+  .score-numero.critico { color: var(--alta); }
+  .score-numero.moderado { color: var(--media); }
+  .score-numero.baixo { color: var(--baixa); }
+  .score-legenda { color: #8b949e; font-size: 0.85em; }
+  .score-info { flex: 1; min-width: 200px; }
+  .score-info .titulo { color: var(--text-bright); font-weight: bold; margin-bottom: 4px; }
+
+  .tabela-alvos { width: 100%; margin-top: 12px; font-size: 0.85em; }
+  .tabela-alvos td, .tabela-alvos th { padding: 6px 10px; }
+
+  details.secao-historico {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 25px 0;
+  }
+  details.secao-historico summary {
+    cursor: pointer;
+    color: var(--accent);
+    font-weight: bold;
+  }
+  details.secao-historico table { margin-top: 14px; }
 </style>
 </head>
 <body>
@@ -166,10 +206,22 @@
   <h1>&gt; Dashboard de Postura de Segurança</h1>
   <p class="subtitulo">Scanner de rede local via nmap — projeto demonstrativo de análise de exposição de portas</p>
 
+  <div id="painel-score">
+    <div class="estado-vazio">Carregando score...</div>
+  </div>
+
+  <details class="secao-historico">
+    <summary>Histórico de Scans</summary>
+    <div id="conteudo-historico">
+      <div class="estado-vazio">Carregando histórico...</div>
+    </div>
+  </details>
+
   <div class="painel-scan">
     <input type="text" id="input-alvo" placeholder="Ex: 127.0.0.1 ou 192.168.1.1" value="127.0.0.1">
     <select id="select-tipo-scan">
       <option value="rapido">Rápido (portas comuns)</option>
+      <option value="iot">IoT/Dispositivo lento (câmeras, etc)</option>
       <option value="completo">Completo (todas as portas + versão)</option>
     </select>
     <button id="btn-scan" onclick="rodarScan()">Rodar Scan</button>
@@ -182,6 +234,79 @@
 
 <script>
 const API_URL = "http://127.0.0.1:5000";
+
+document.addEventListener("DOMContentLoaded", () => {
+  carregarScore();
+  carregarHistorico();
+});
+
+async function carregarScore() {
+  const container = document.getElementById("painel-score");
+  try {
+    const resp = await fetch(API_URL + "/api/score");
+    const dados = await resp.json();
+    renderizarScore(dados);
+  } catch (e) {
+    container.innerHTML = '<div class="estado-erro">Não foi possível carregar o score. Confirma se o backend está rodando.</div>';
+  }
+}
+
+function renderizarScore(dados) {
+  const container = document.getElementById("painel-score");
+  const score = dados.score_geral;
+  let classe = "baixo";
+  let rotulo = "Baixo risco";
+  if (score >= 7) { classe = "critico"; rotulo = "Risco crítico"; }
+  else if (score >= 4) { classe = "moderado"; rotulo = "Risco moderado"; }
+
+  let html = '<div class="score-numero ' + classe + '">' + score.toFixed(1) + '<span class="score-legenda">/10</span></div>';
+  html += '<div class="score-info">';
+  html += '<div class="titulo">Postura geral: ' + rotulo + '</div>';
+  html += '<div class="score-legenda">Baseado no scan mais recente de ' + dados.total_alvos_monitorados + ' alvo(s) monitorado(s)</div>';
+
+  if (dados.por_alvo && dados.por_alvo.length > 0) {
+    html += '<table class="tabela-alvos"><thead><tr><th>Alvo</th><th>Portas abertas</th><th>Score</th></tr></thead><tbody>';
+    dados.por_alvo.forEach(a => {
+      html += '<tr><td>' + escapeHtml(a.alvo) + '</td><td>' + a.portas_abertas + '</td><td>' + a.score.toFixed(1) + '</td></tr>';
+    });
+    html += '</tbody></table>';
+  }
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+async function carregarHistorico() {
+  const container = document.getElementById("conteudo-historico");
+  try {
+    const resp = await fetch(API_URL + "/api/historico");
+    const dados = await resp.json();
+    renderizarHistorico(dados);
+  } catch (e) {
+    container.innerHTML = '<div class="estado-erro">Não foi possível carregar o histórico.</div>';
+  }
+}
+
+function renderizarHistorico(scans) {
+  const container = document.getElementById("conteudo-historico");
+  if (!scans || scans.length === 0) {
+    container.innerHTML = '<div class="estado-vazio">Nenhum scan no histórico ainda.</div>';
+    return;
+  }
+
+  let html = '<table><thead><tr><th>Alvo</th><th>Tipo</th><th>Portas abertas</th><th>Quando</th></tr></thead><tbody>';
+  scans.forEach(s => {
+    html += '<tr>';
+    html += '<td>' + escapeHtml(s.alvo) + '</td>';
+    html += '<td>' + escapeHtml(s.tipo_scan) + '</td>';
+    html += '<td>' + s.total_portas_abertas + '</td>';
+    html += '<td>' + new Date(s.timestamp).toLocaleString('pt-PT') + '</td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+
+  container.innerHTML = html;
+}
 
 async function rodarScan() {
   const alvo = document.getElementById("input-alvo").value.trim();
@@ -210,6 +335,8 @@ async function rodarScan() {
     }
 
     renderizarResultado(dados);
+    carregarScore();
+    carregarHistorico();
   } catch (e) {
     container.innerHTML = '<div class="estado-erro">Não foi possível conectar ao backend em ' + API_URL + '. Confirma se o servidor Flask está rodando (python3 app.py).</div>';
   } finally {
